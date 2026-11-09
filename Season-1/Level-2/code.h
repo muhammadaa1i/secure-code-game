@@ -80,7 +80,11 @@ bool update_setting(int user_id, const char *index, const char *value) {
         return false;
 
     v = strtol(value, &endptr, 10);
-    if (*endptr || i >= SETTINGS_COUNT)
+    // Reject negative indexes too: setting[-7] writes outside the array
+    // and can overwrite isAdmin (privilege escalation)
+    if (*endptr || i < 0 || i >= SETTINGS_COUNT)
+        return false;
+    if (accounts[user_id] == NULL)
         return false;
     accounts[user_id]->setting[i] = v;
     return true;
